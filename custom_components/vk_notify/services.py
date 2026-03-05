@@ -9,26 +9,38 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ServiceValidationError
 
 from .const import (
+    CONF_ACCESS_TOKEN,
     CONF_CONFIG_ENTRY_ID,
     CONF_RECIPIENT_ID,
     DOMAIN,
     SERVICE_SEND_MESSAGE,
+    SERVICE_SEND_PHOTO,
 )
 from .notify import async_send_plain_message
-from .schemas import SERVICE_SEND_MESSAGE_SCHEMA
+from .api import send_photo
+from .schemas import SERVICE_SEND_MESSAGE_SCHEMA, SERVICE_SEND_PHOTO_SCHEMA
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def register_send_message_service(hass: HomeAssistant) -> None:
-    """Register vk_notify.send_message service (idempotent)."""
+    """Register vk_notify services (idempotent)."""
     if hass.services.has_service(DOMAIN, SERVICE_SEND_MESSAGE):
+        pass
+    else:
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SEND_MESSAGE,
+            async_send_message_handler,
+            schema=SERVICE_SEND_MESSAGE_SCHEMA,
+        )
+    if hass.services.has_service(DOMAIN, SERVICE_SEND_PHOTO):
         return
     hass.services.async_register(
         DOMAIN,
-        SERVICE_SEND_MESSAGE,
-        async_send_message_handler,
-        schema=SERVICE_SEND_MESSAGE_SCHEMA,
+        SERVICE_SEND_PHOTO,
+        async_send_photo_handler,
+        schema=SERVICE_SEND_PHOTO_SCHEMA,
     )
 
 
@@ -79,5 +91,43 @@ async def async_send_message_handler(service: ServiceCall) -> None:
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="send_failed",
+            translation_placeholders={"reason": str(err)},
+        ) from err
+
+
+async def async_send_photo_handler(service: ServiceCall) -> None:
+    """Handle vk_notify.send_photo."""
+    hass = service.hass
+    data = service.data
+    entry = _resolve_entry(hass, data.get(CONF_CONFIG_ENTRY_ID))
+
+    recipient_id = data.get(CONF_RECIPIENT_ID, entry.data.get(CONF_RECIPIENT_ID))
+    if recipient_id in (None, 0):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="missing_target",
+        )
+
+    token = str(entry.data.get(CONF_ACCESS_TOKEN, "")).strip()
+    if not token:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="send_photo_failed",
+            translation_placeholders={"reason": "No VK token in config entry"},
+        )
+
+    try:
+        await send_photo(
+            hass,
+            token=token,
+            peer_id=int(recipient_id),
+            file=data["file"],
+            caption=data.get("caption"),
+        )
+    except (RuntimeError, OSError) as err:
+        _LOGGER.error("VK send photo failed: %s", err)
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="send_photo_failed",
             translation_placeholders={"reason": str(err)},
         ) from err

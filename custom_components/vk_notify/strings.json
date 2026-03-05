@@ -21,6 +21,28 @@
           "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
         }
       }
+    },
+    "send_photo": {
+      "name": "Send photo",
+      "description": "Send a photo to VK by peer_id.",
+      "fields": {
+        "file": {
+          "name": "File",
+          "description": "Local file path (/config/...) or image URL (http/https)."
+        },
+        "caption": {
+          "name": "Caption",
+          "description": "Optional photo caption."
+        },
+        "config_entry_id": {
+          "name": "Integration",
+          "description": "Integration entry id (required if several VK Notify integrations are configured)."
+        },
+        "recipient_id": {
+          "name": "Recipient ID",
+          "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
+        }
+      }
     }
   },
   "missing_target": "Specify recipient_id in service call or set default recipient_id in integration.",
@@ -39,6 +61,9 @@
     },
     "send_failed": {
       "message": "Failed to send VK message: {reason}"
+    },
+    "send_photo_failed": {
+      "message": "Failed to send VK photo: {reason}"
     }
   },
   "config": {
@@ -82,5 +107,6 @@
         }
       }
     }
-  }
+  },
+  "send_photo_failed": "Failed to send VK photo: {reason}"
 }

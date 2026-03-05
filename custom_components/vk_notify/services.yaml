@@ -21,3 +21,26 @@ send_message:
       example: 2000000001
       selector:
         number:
+send_photo:
+  name: Send photo
+  description: Send a photo to VK by peer_id.
+  fields:
+    file:
+      required: true
+      example: "/config/www/photo.jpg"
+      selector:
+        text:
+    caption:
+      required: false
+      example: "Camera snapshot"
+      selector:
+        text:
+    config_entry_id:
+      required: false
+      selector:
+        text:
+    recipient_id:
+      required: false
+      example: 2000000001
+      selector:
+        number:
