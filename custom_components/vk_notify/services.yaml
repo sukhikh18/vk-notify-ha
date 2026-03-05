@@ -1,0 +1,23 @@
+send_message:
+  name: Send message
+  description: Send a text message to VK by peer_id.
+  fields:
+    message:
+      required: true
+      example: "Hello from Home Assistant"
+      selector:
+        text:
+    title:
+      required: false
+      example: "Alert"
+      selector:
+        text:
+    config_entry_id:
+      required: false
+      selector:
+        text:
+    recipient_id:
+      required: false
+      example: 2000000001
+      selector:
+        number:

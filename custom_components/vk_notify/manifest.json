@@ -1,0 +1,16 @@
+{
+  "domain": "vk_notify",
+  "name": "VK Notify",
+  "codeowners": [
+    "@nikolays93"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/sukhikh18/vk-notify-ha",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "version": "0.1.0",
+  "minimum_ha_version": "2025.12.0",
+  "issue_tracker": "https://github.com/sukhikh18/vk-notify-ha/issues"
+}

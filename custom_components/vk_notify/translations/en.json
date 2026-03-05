@@ -1,0 +1,87 @@
+{
+  "title": "VK Notify",
+  "services": {
+    "send_message": {
+      "name": "Send message",
+      "description": "Send a text message to VK by peer_id.",
+      "fields": {
+        "message": {
+          "name": "Message",
+          "description": "Text of the message."
+        },
+        "title": {
+          "name": "Title",
+          "description": "Optional title, prepended to message."
+        },
+        "config_entry_id": {
+          "name": "Integration",
+          "description": "Integration entry id (required if several VK Notify integrations are configured)."
+        },
+        "recipient_id": {
+          "name": "Recipient ID",
+          "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
+        }
+      }
+    }
+  },
+  "missing_target": "Specify recipient_id in service call or set default recipient_id in integration.",
+  "invalid_config_entry": "Invalid config entry: {config_entry_id}",
+  "missing_config_entry_id": "Multiple VK Notify integrations found; specify config_entry_id.",
+  "send_failed": "Failed to send VK message: {reason}",
+  "exceptions": {
+    "missing_target": {
+      "message": "Specify recipient_id in service call or set default recipient_id in integration."
+    },
+    "invalid_config_entry": {
+      "message": "Invalid config entry: {config_entry_id}"
+    },
+    "missing_config_entry_id": {
+      "message": "Multiple VK Notify integrations found; specify config_entry_id."
+    },
+    "send_failed": {
+      "message": "Failed to send VK message: {reason}"
+    }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "title": "VK Notify",
+        "description": "Configure VK group token and a default recipient peer_id.",
+        "data": {
+          "access_token": "Access token",
+          "group_id": "Group ID",
+          "recipient_id": "Default recipient ID (peer_id)",
+          "receive_mode": "Receive mode",
+          "webhook_secret": "Webhook secret (optional)",
+          "confirmation_code": "Confirmation code (for Callback API)"
+        }
+      }
+    },
+    "error": {
+      "invalid_token": "Token cannot be empty",
+      "invalid_auth": "Invalid token or insufficient token rights",
+      "cannot_connect": "Failed to connect to VK API",
+      "invalid_id_format": "Recipient ID must be a non-zero integer",
+      "invalid_group_id": "Invalid group ID. Use numeric community ID without minus sign."
+    },
+    "abort": {
+      "already_configured": "This group is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "VK Notify settings",
+        "description": "Update token (optional), group ID, default peer_id, and webhook options.",
+        "data": {
+          "access_token": "New access token (optional)",
+          "group_id": "Group ID",
+          "recipient_id": "Default recipient ID (peer_id)",
+          "receive_mode": "Receive mode",
+          "webhook_secret": "Webhook secret (optional)",
+          "confirmation_code": "Confirmation code"
+        }
+      }
+    }
+  }
+}

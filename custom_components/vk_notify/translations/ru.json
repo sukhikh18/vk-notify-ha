@@ -1,0 +1,87 @@
+{
+  "title": "VK Notify",
+  "services": {
+    "send_message": {
+      "name": "Отправить сообщение",
+      "description": "Отправить текстовое сообщение в VK по peer_id.",
+      "fields": {
+        "message": {
+          "name": "Сообщение",
+          "description": "Текст сообщения."
+        },
+        "title": {
+          "name": "Заголовок",
+          "description": "Необязательный заголовок, добавляется перед текстом."
+        },
+        "config_entry_id": {
+          "name": "Интеграция",
+          "description": "ID интеграции (обязательно, если настроено несколько VK Notify)."
+        },
+        "recipient_id": {
+          "name": "ID получателя",
+          "description": "VK peer_id. Пользователь: положительный ID, беседа: 2000000000 + номер беседы."
+        }
+      }
+    }
+  },
+  "missing_target": "Укажите recipient_id в сервисе или задайте recipient_id по умолчанию в интеграции.",
+  "invalid_config_entry": "Недопустимая запись конфигурации: {config_entry_id}",
+  "missing_config_entry_id": "Найдено несколько VK Notify интеграций; укажите config_entry_id.",
+  "send_failed": "Не удалось отправить сообщение в VK: {reason}",
+  "exceptions": {
+    "missing_target": {
+      "message": "Укажите recipient_id в сервисе или задайте recipient_id по умолчанию в интеграции."
+    },
+    "invalid_config_entry": {
+      "message": "Недопустимая запись конфигурации: {config_entry_id}"
+    },
+    "missing_config_entry_id": {
+      "message": "Найдено несколько VK Notify интеграций; укажите config_entry_id."
+    },
+    "send_failed": {
+      "message": "Не удалось отправить сообщение в VK: {reason}"
+    }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "title": "VK Notify",
+        "description": "Настройте токен сообщества VK и peer_id получателя по умолчанию.",
+        "data": {
+          "access_token": "Токен доступа",
+          "group_id": "ID сообщества",
+          "recipient_id": "ID получателя по умолчанию (peer_id)",
+          "receive_mode": "Режим приёма",
+          "webhook_secret": "Секрет webhook (необязательно)",
+          "confirmation_code": "Строка подтверждения (Callback API)"
+        }
+      }
+    },
+    "error": {
+      "invalid_token": "Токен не может быть пустым",
+      "invalid_auth": "Неверный токен или недостаточно прав токена",
+      "cannot_connect": "Не удалось подключиться к VK API",
+      "invalid_id_format": "ID получателя должен быть целым числом и не равен нулю",
+      "invalid_group_id": "Неверный ID сообщества. Укажите числовой ID без знака минус."
+    },
+    "abort": {
+      "already_configured": "Это сообщество уже настроено"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Настройки VK Notify",
+        "description": "Обновите токен (необязательно), ID сообщества, peer_id по умолчанию и параметры webhook.",
+        "data": {
+          "access_token": "Новый токен (необязательно)",
+          "group_id": "ID сообщества",
+          "recipient_id": "ID получателя по умолчанию (peer_id)",
+          "receive_mode": "Режим приёма",
+          "webhook_secret": "Секрет webhook (необязательно)",
+          "confirmation_code": "Строка подтверждения"
+        }
+      }
+    }
+  }
+}
