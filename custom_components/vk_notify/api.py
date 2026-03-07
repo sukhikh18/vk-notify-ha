@@ -240,3 +240,190 @@ async def send_photo(
         raise RuntimeError(
             f"VK API error {error.get('error_code')}: {error.get('error_msg')}"
         )
+
+
+async def send_document(
+    hass: HomeAssistant,
+    token: str,
+    peer_id: int,
+    file: str,
+    caption: str | None = None,
+) -> None:
+    """Upload file and send it to VK peer as document."""
+    source = file.strip()
+    if source.startswith(("http://", "https://")):
+        raw, filename, content_type = await _read_remote_file(hass, source)
+    else:
+        raw, filename, content_type = await _read_local_file(hass, source)
+    if not raw:
+        raise RuntimeError("Document payload is empty")
+
+    upload_server_resp = await _vk_api_call(
+        hass,
+        token,
+        "docs.getMessagesUploadServer",
+        {"peer_id": int(peer_id)},
+    )
+    if "error" in upload_server_resp:
+        error = upload_server_resp["error"]
+        raise RuntimeError(
+            f"VK API error {error.get('error_code')}: {error.get('error_msg')}"
+        )
+
+    upload_url = (upload_server_resp.get("response") or {}).get("upload_url")
+    if not upload_url:
+        raise RuntimeError("VK docs upload URL is missing")
+
+    session = async_get_clientsession(hass)
+    form = aiohttp.FormData()
+    form.add_field("file", raw, filename=filename, content_type=content_type)
+    async with session.post(
+        upload_url,
+        data=form,
+        timeout=aiohttp.ClientTimeout(total=180),
+    ) as upload_resp:
+        if upload_resp.status >= 400:
+            body = await upload_resp.text()
+            raise RuntimeError(
+                f"VK video upload failed: status={upload_resp.status}, body={body[:200]}"
+            )
+        upload_body = await upload_resp.json(content_type=None)
+    upload_file = upload_body.get("file")
+    if not upload_file:
+        raise RuntimeError("VK docs upload response has no file token")
+
+    docs_save_resp = await _vk_api_call(
+        hass,
+        token,
+        "docs.save",
+        {"file": upload_file, "title": filename},
+    )
+    if "error" in docs_save_resp:
+        error = docs_save_resp["error"]
+        raise RuntimeError(
+            f"VK API error {error.get('error_code')}: {error.get('error_msg')}"
+        )
+    docs_response = docs_save_resp.get("response")
+    doc_obj: dict[str, Any] | None = None
+    if isinstance(docs_response, dict):
+        if isinstance(docs_response.get("doc"), dict):
+            doc_obj = docs_response["doc"]
+        elif isinstance(docs_response.get("docs"), list) and docs_response["docs"]:
+            first = docs_response["docs"][0]
+            if isinstance(first, dict):
+                doc_obj = first
+    elif isinstance(docs_response, list) and docs_response:
+        first = docs_response[0]
+        if isinstance(first, dict):
+            doc_obj = first
+
+    if not doc_obj:
+        raise RuntimeError("VK docs.save returned empty response")
+
+    owner_id = doc_obj.get("owner_id")
+    doc_id = doc_obj.get("id")
+    access_key = doc_obj.get("access_key")
+    if owner_id is None or doc_id is None:
+        raise RuntimeError("VK document attachment fields are missing")
+    attachment = f"doc{owner_id}_{doc_id}"
+    if access_key:
+        attachment = f"{attachment}_{access_key}"
+
+    send_resp = await _vk_api_call(
+        hass,
+        token,
+        "messages.send",
+        {
+            "peer_id": int(peer_id),
+            "random_id": random.randint(1, 2_147_483_647),
+            "message": (caption or "")[:4000],
+            "attachment": attachment,
+        },
+    )
+    if "error" in send_resp:
+        error = send_resp["error"]
+        raise RuntimeError(
+            f"VK API error {error.get('error_code')}: {error.get('error_msg')}"
+        )
+
+
+async def send_video(
+    hass: HomeAssistant,
+    token: str,
+    peer_id: int,
+    file: str,
+    video_access_token: str,
+    caption: str | None = None,
+) -> None:
+    """Upload video and send native VK video attachment."""
+    source = file.strip()
+    if source.startswith(("http://", "https://")):
+        raw, filename, content_type = await _read_remote_file(hass, source)
+    else:
+        raw, filename, content_type = await _read_local_file(hass, source)
+    if not raw:
+        raise RuntimeError("Video payload is empty")
+
+    user_video_token = video_access_token.strip()
+    if not user_video_token:
+        raise RuntimeError("video_access_token is required")
+
+    video_save_resp = await _vk_api_call(
+        hass,
+        user_video_token,
+        "video.save",
+        {
+            "name": filename,
+            "description": (caption or "")[:4000],
+            "is_private": 0,
+        },
+    )
+    if "error" in video_save_resp:
+        error = video_save_resp["error"]
+        raise RuntimeError(
+            f"VK API error {error.get('error_code')}: {error.get('error_msg')}"
+        )
+    saved = video_save_resp.get("response")
+    if not isinstance(saved, dict):
+        raise RuntimeError("VK video.save returned invalid response")
+    upload_url = saved.get("upload_url")
+    owner_id = saved.get("owner_id")
+    video_id = saved.get("video_id") or saved.get("id")
+    access_key = saved.get("access_key")
+    if not upload_url or owner_id is None or video_id is None:
+        raise RuntimeError("VK video.save missing upload_url/owner_id/video_id")
+
+    session = async_get_clientsession(hass)
+    form = aiohttp.FormData()
+    form.add_field("video_file", raw, filename=filename, content_type=content_type)
+    async with session.post(
+        upload_url,
+        data=form,
+        timeout=aiohttp.ClientTimeout(total=300),
+    ) as upload_resp:
+        if upload_resp.status >= 400:
+            body = await upload_resp.text()
+            raise RuntimeError(
+                f"VK video upload failed: status={upload_resp.status}, body={body[:200]}"
+            )
+        await upload_resp.read()
+
+    attachment = f"video{owner_id}_{video_id}"
+    if access_key:
+        attachment = f"{attachment}_{access_key}"
+    send_resp = await _vk_api_call(
+        hass,
+        token,
+        "messages.send",
+        {
+            "peer_id": int(peer_id),
+            "random_id": random.randint(1, 2_147_483_647),
+            "message": (caption or "")[:4000],
+            "attachment": attachment,
+        },
+    )
+    if "error" in send_resp:
+        error = send_resp["error"]
+        raise RuntimeError(
+            f"VK API error {error.get('error_code')}: {error.get('error_msg')}"
+        )

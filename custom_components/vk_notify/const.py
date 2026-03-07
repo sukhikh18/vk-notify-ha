@@ -4,6 +4,8 @@ DOMAIN = "vk_notify"
 
 SERVICE_SEND_MESSAGE = "send_message"
 SERVICE_SEND_PHOTO = "send_photo"
+SERVICE_SEND_DOCUMENT = "send_document"
+SERVICE_SEND_VIDEO = "send_video"
 CONF_CONFIG_ENTRY_ID = "config_entry_id"
 
 CONF_ACCESS_TOKEN = "access_token"

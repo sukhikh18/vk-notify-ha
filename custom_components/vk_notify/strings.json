@@ -43,6 +43,54 @@
           "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
         }
       }
+    },
+    "send_video": {
+      "name": "Send video",
+      "description": "Send a video to VK by peer_id.",
+      "fields": {
+        "file": {
+          "name": "File",
+          "description": "Local file path (/config/...) or video URL (http/https)."
+        },
+        "caption": {
+          "name": "Caption",
+          "description": "Optional video caption."
+        },
+        "config_entry_id": {
+          "name": "Integration",
+          "description": "Integration entry id (required if several VK Notify integrations are configured)."
+        },
+        "recipient_id": {
+          "name": "Recipient ID",
+          "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
+        },
+        "video_access_token": {
+          "name": "User token for video",
+          "description": "Required VK user token with video,messages scopes. Native video cannot be sent without it."
+        }
+      }
+    },
+    "send_document": {
+      "name": "Send document",
+      "description": "Send file/video to VK as document by peer_id.",
+      "fields": {
+        "file": {
+          "name": "File",
+          "description": "Local file path (/config/...) or file URL (http/https)."
+        },
+        "caption": {
+          "name": "Caption",
+          "description": "Optional document caption."
+        },
+        "config_entry_id": {
+          "name": "Integration",
+          "description": "Integration entry id (required if several VK Notify integrations are configured)."
+        },
+        "recipient_id": {
+          "name": "Recipient ID",
+          "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
+        }
+      }
     }
   },
   "missing_target": "Specify recipient_id in service call or set default recipient_id in integration.",
@@ -64,6 +112,12 @@
     },
     "send_photo_failed": {
       "message": "Failed to send VK photo: {reason}"
+    },
+    "send_video_failed": {
+      "message": "Failed to send VK video: {reason}"
+    },
+    "send_document_failed": {
+      "message": "Failed to send VK document: {reason}"
     }
   },
   "config": {
@@ -108,5 +162,7 @@
       }
     }
   },
-  "send_photo_failed": "Failed to send VK photo: {reason}"
+  "send_photo_failed": "Failed to send VK photo: {reason}",
+  "send_video_failed": "Failed to send VK video: {reason}",
+  "send_document_failed": "Failed to send VK document: {reason}"
 }

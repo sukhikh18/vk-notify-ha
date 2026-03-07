@@ -44,3 +44,54 @@ send_photo:
       example: 2000000001
       selector:
         number:
+send_video:
+  name: Send video
+  description: Send a video to VK by peer_id.
+  fields:
+    file:
+      required: true
+      example: "/config/www/video.mp4"
+      selector:
+        text:
+    caption:
+      required: false
+      example: "Camera clip"
+      selector:
+        text:
+    video_access_token:
+      required: true
+      example: "vk1.a...."
+      selector:
+        text:
+    config_entry_id:
+      required: false
+      selector:
+        text:
+    recipient_id:
+      required: false
+      example: 2000000001
+      selector:
+        number:
+send_document:
+  name: Send document
+  description: Send a document/video file to VK by peer_id (docs attachment).
+  fields:
+    file:
+      required: true
+      example: "/config/www/video.mp4"
+      selector:
+        text:
+    caption:
+      required: false
+      example: "Camera clip"
+      selector:
+        text:
+    config_entry_id:
+      required: false
+      selector:
+        text:
+    recipient_id:
+      required: false
+      example: 2000000001
+      selector:
+        number:

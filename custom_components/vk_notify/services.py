@@ -13,12 +13,19 @@ from .const import (
     CONF_CONFIG_ENTRY_ID,
     CONF_RECIPIENT_ID,
     DOMAIN,
+    SERVICE_SEND_DOCUMENT,
     SERVICE_SEND_MESSAGE,
     SERVICE_SEND_PHOTO,
+    SERVICE_SEND_VIDEO,
 )
 from .notify import async_send_plain_message
-from .api import send_photo
-from .schemas import SERVICE_SEND_MESSAGE_SCHEMA, SERVICE_SEND_PHOTO_SCHEMA
+from .api import send_document, send_photo, send_video
+from .schemas import (
+    SERVICE_SEND_DOCUMENT_SCHEMA,
+    SERVICE_SEND_MESSAGE_SCHEMA,
+    SERVICE_SEND_PHOTO_SCHEMA,
+    SERVICE_SEND_VIDEO_SCHEMA,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,12 +42,30 @@ def register_send_message_service(hass: HomeAssistant) -> None:
             schema=SERVICE_SEND_MESSAGE_SCHEMA,
         )
     if hass.services.has_service(DOMAIN, SERVICE_SEND_PHOTO):
+        pass
+    else:
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SEND_PHOTO,
+            async_send_photo_handler,
+            schema=SERVICE_SEND_PHOTO_SCHEMA,
+        )
+    if hass.services.has_service(DOMAIN, SERVICE_SEND_DOCUMENT):
+        pass
+    else:
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SEND_DOCUMENT,
+            async_send_document_handler,
+            schema=SERVICE_SEND_DOCUMENT_SCHEMA,
+        )
+    if hass.services.has_service(DOMAIN, SERVICE_SEND_VIDEO):
         return
     hass.services.async_register(
         DOMAIN,
-        SERVICE_SEND_PHOTO,
-        async_send_photo_handler,
-        schema=SERVICE_SEND_PHOTO_SCHEMA,
+        SERVICE_SEND_VIDEO,
+        async_send_video_handler,
+        schema=SERVICE_SEND_VIDEO_SCHEMA,
     )
 
 
@@ -129,5 +154,82 @@ async def async_send_photo_handler(service: ServiceCall) -> None:
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="send_photo_failed",
+            translation_placeholders={"reason": str(err)},
+        ) from err
+
+
+async def async_send_video_handler(service: ServiceCall) -> None:
+    """Handle vk_notify.send_video."""
+    hass = service.hass
+    data = service.data
+    entry = _resolve_entry(hass, data.get(CONF_CONFIG_ENTRY_ID))
+
+    recipient_id = data.get(CONF_RECIPIENT_ID, entry.data.get(CONF_RECIPIENT_ID))
+    if recipient_id in (None, 0):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="missing_target",
+        )
+
+    token = str(entry.data.get(CONF_ACCESS_TOKEN, "")).strip()
+    if not token:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="send_video_failed",
+            translation_placeholders={"reason": "No VK token in config entry"},
+        )
+
+    try:
+        await send_video(
+            hass,
+            token=token,
+            peer_id=int(recipient_id),
+            file=data["file"],
+            caption=data.get("caption"),
+            video_access_token=data["video_access_token"],
+        )
+    except (RuntimeError, OSError) as err:
+        _LOGGER.error("VK send video failed: %s", err)
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="send_video_failed",
+            translation_placeholders={"reason": str(err)},
+        ) from err
+
+
+async def async_send_document_handler(service: ServiceCall) -> None:
+    """Handle vk_notify.send_document."""
+    hass = service.hass
+    data = service.data
+    entry = _resolve_entry(hass, data.get(CONF_CONFIG_ENTRY_ID))
+
+    recipient_id = data.get(CONF_RECIPIENT_ID, entry.data.get(CONF_RECIPIENT_ID))
+    if recipient_id in (None, 0):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="missing_target",
+        )
+
+    token = str(entry.data.get(CONF_ACCESS_TOKEN, "")).strip()
+    if not token:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="send_document_failed",
+            translation_placeholders={"reason": "No VK token in config entry"},
+        )
+
+    try:
+        await send_document(
+            hass,
+            token=token,
+            peer_id=int(recipient_id),
+            file=data["file"],
+            caption=data.get("caption"),
+        )
+    except (RuntimeError, OSError) as err:
+        _LOGGER.error("VK send document failed: %s", err)
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="send_document_failed",
             translation_placeholders={"reason": str(err)},
         ) from err

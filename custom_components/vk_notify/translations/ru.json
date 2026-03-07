@@ -44,6 +44,54 @@
           "description": "VK peer_id. Пользователь: положительный ID, беседа: 2000000000 + номер беседы."
         }
       }
+    },
+    "send_video": {
+      "name": "Отправить видео",
+      "description": "Отправить видео в VK по peer_id.",
+      "fields": {
+        "file": {
+          "name": "Файл",
+          "description": "Локальный путь (/config/...) или URL видео (http/https)."
+        },
+        "caption": {
+          "name": "Подпись",
+          "description": "Необязательная подпись к видео."
+        },
+        "config_entry_id": {
+          "name": "Интеграция",
+          "description": "ID интеграции (обязательно, если настроено несколько VK Notify)."
+        },
+        "recipient_id": {
+          "name": "ID получателя",
+          "description": "VK peer_id. Пользователь: положительный ID, беседа: 2000000000 + номер беседы."
+        },
+        "video_access_token": {
+          "name": "Токен пользователя для видео",
+          "description": "Обязательный user token VK с правами video,messages. Без него нативное видео отправить нельзя."
+        }
+      }
+    },
+    "send_document": {
+      "name": "Отправить документ",
+      "description": "Отправить файл/видео в VK как документ по peer_id.",
+      "fields": {
+        "file": {
+          "name": "Файл",
+          "description": "Локальный путь (/config/...) или URL файла (http/https)."
+        },
+        "caption": {
+          "name": "Подпись",
+          "description": "Необязательная подпись к документу."
+        },
+        "config_entry_id": {
+          "name": "Интеграция",
+          "description": "ID интеграции (обязательно, если настроено несколько VK Notify)."
+        },
+        "recipient_id": {
+          "name": "ID получателя",
+          "description": "VK peer_id. Пользователь: положительный ID, беседа: 2000000000 + номер беседы."
+        }
+      }
     }
   },
   "missing_target": "Укажите recipient_id в сервисе или задайте recipient_id по умолчанию в интеграции.",
@@ -65,6 +113,12 @@
     },
     "send_photo_failed": {
       "message": "Не удалось отправить фото в VK: {reason}"
+    },
+    "send_video_failed": {
+      "message": "Не удалось отправить видео в VK: {reason}"
+    },
+    "send_document_failed": {
+      "message": "Не удалось отправить документ в VK: {reason}"
     }
   },
   "config": {
@@ -109,5 +163,7 @@
       }
     }
   },
-  "send_photo_failed": "Не удалось отправить фото в VK: {reason}"
+  "send_photo_failed": "Не удалось отправить фото в VK: {reason}",
+  "send_video_failed": "Не удалось отправить видео в VK: {reason}",
+  "send_document_failed": "Не удалось отправить документ в VK: {reason}"
 }
