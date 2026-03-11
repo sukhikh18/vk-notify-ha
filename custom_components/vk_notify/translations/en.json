@@ -46,6 +46,10 @@
         "recipient_id": {
           "name": "Recipient ID",
           "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
+        },
+        "buttons": {
+          "name": "Buttons",
+          "description": "Inline buttons. YAML format: list of rows, button: text, command (optional), color (optional)."
         }
       }
     },
@@ -94,6 +98,10 @@
         "recipient_id": {
           "name": "Recipient ID",
           "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
+        },
+        "buttons": {
+          "name": "Buttons",
+          "description": "Inline buttons. YAML format: list of rows, button: text, command (optional), color (optional)."
         }
       }
     }

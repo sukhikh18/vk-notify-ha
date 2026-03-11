@@ -57,6 +57,14 @@ send_photo:
       example: 2000000001
       selector:
         number:
+    buttons:
+      required: false
+      example: |
+        - - text: "Mute"
+            command: mute
+            color: negative
+      selector:
+        text:
 send_video:
   name: Send video
   description: Send a video to VK by peer_id.
@@ -108,3 +116,11 @@ send_document:
       example: 2000000001
       selector:
         number:
+    buttons:
+      required: false
+      example: |
+        - - text: "Mute"
+            command: mute
+            color: negative
+      selector:
+        text:

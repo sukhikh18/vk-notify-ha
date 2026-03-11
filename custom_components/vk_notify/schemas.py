@@ -36,6 +36,10 @@ SERVICE_SEND_PHOTO_SCHEMA = vol.Schema(
     {
         vol.Required("file"): cv.string,
         vol.Optional("caption"): cv.string,
+        vol.Optional("buttons"): vol.Any(
+            cv.string,
+            vol.All(cv.ensure_list, [vol.All(cv.ensure_list, [_BUTTON_SCHEMA])]),
+        ),
         vol.Optional(CONF_CONFIG_ENTRY_ID): cv.string,
         vol.Optional(CONF_RECIPIENT_ID): vol.Coerce(int),
     }
@@ -45,6 +49,10 @@ SERVICE_SEND_DOCUMENT_SCHEMA = vol.Schema(
     {
         vol.Required("file"): cv.string,
         vol.Optional("caption"): cv.string,
+        vol.Optional("buttons"): vol.Any(
+            cv.string,
+            vol.All(cv.ensure_list, [vol.All(cv.ensure_list, [_BUTTON_SCHEMA])]),
+        ),
         vol.Optional(CONF_CONFIG_ENTRY_ID): cv.string,
         vol.Optional(CONF_RECIPIENT_ID): vol.Coerce(int),
     }

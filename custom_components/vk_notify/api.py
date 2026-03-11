@@ -220,6 +220,7 @@ async def send_photo(
     peer_id: int,
     file: str,
     caption: str | None = None,
+    buttons: list[list[dict[str, Any]]] | None = None,
 ) -> None:
     """Upload image and send it to VK peer."""
     upload_server_resp = await _vk_api_call(
@@ -293,16 +294,19 @@ async def send_photo(
         attachment = f"{attachment}_{access_key}"
 
     message_text = (caption or "")[:4000]
+    params: dict[str, Any] = {
+        "peer_id": int(peer_id),
+        "random_id": random.randint(1, 2_147_483_647),
+        "message": message_text,
+        "attachment": attachment,
+    }
+    if buttons:
+        params["keyboard"] = _build_keyboard(buttons)
     send_resp = await _vk_api_call(
         hass,
         token,
         "messages.send",
-        {
-            "peer_id": int(peer_id),
-            "random_id": random.randint(1, 2_147_483_647),
-            "message": message_text,
-            "attachment": attachment,
-        },
+        params,
     )
     if "error" in send_resp:
         error = send_resp["error"]
@@ -317,6 +321,7 @@ async def send_document(
     peer_id: int,
     file: str,
     caption: str | None = None,
+    buttons: list[list[dict[str, Any]]] | None = None,
 ) -> None:
     """Upload file and send it to VK peer as document."""
     source = file.strip()
@@ -398,16 +403,19 @@ async def send_document(
     if access_key:
         attachment = f"{attachment}_{access_key}"
 
+    params: dict[str, Any] = {
+        "peer_id": int(peer_id),
+        "random_id": random.randint(1, 2_147_483_647),
+        "message": (caption or "")[:4000],
+        "attachment": attachment,
+    }
+    if buttons:
+        params["keyboard"] = _build_keyboard(buttons)
     send_resp = await _vk_api_call(
         hass,
         token,
         "messages.send",
-        {
-            "peer_id": int(peer_id),
-            "random_id": random.randint(1, 2_147_483_647),
-            "message": (caption or "")[:4000],
-            "attachment": attachment,
-        },
+        params,
     )
     if "error" in send_resp:
         error = send_resp["error"]

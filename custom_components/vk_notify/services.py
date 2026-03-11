@@ -35,6 +35,39 @@ from .schemas import (
 _LOGGER = logging.getLogger(__name__)
 
 
+def _parse_buttons(value: object) -> list[list[dict[str, object]]] | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        if yaml is None:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_buttons",
+            )
+        try:
+            parsed = yaml.safe_load(value)
+        except Exception as err:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_buttons",
+                translation_placeholders={"reason": str(err)},
+            ) from err
+        if parsed is None:
+            return []
+        if not isinstance(parsed, list):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_buttons",
+            )
+        return parsed
+    if isinstance(value, list):
+        return value
+    raise ServiceValidationError(
+        translation_domain=DOMAIN,
+        translation_key="invalid_buttons",
+    )
+
+
 def register_send_message_service(hass: HomeAssistant) -> None:
     """Register vk_notify services (idempotent)."""
     if hass.services.has_service(DOMAIN, SERVICE_SEND_MESSAGE):
@@ -109,28 +142,7 @@ async def async_send_message_handler(service: ServiceCall) -> None:
         )
 
     try:
-        buttons = data.get("buttons")
-        if isinstance(buttons, str):
-            if yaml is None:
-                raise ServiceValidationError(
-                    translation_domain=DOMAIN,
-                    translation_key="invalid_buttons",
-                )
-            try:
-                buttons = yaml.safe_load(buttons)
-            except Exception as err:
-                raise ServiceValidationError(
-                    translation_domain=DOMAIN,
-                    translation_key="invalid_buttons",
-                    translation_placeholders={"reason": str(err)},
-                ) from err
-            if buttons is None:
-                buttons = []
-        if buttons and not isinstance(buttons, list):
-            raise ServiceValidationError(
-                translation_domain=DOMAIN,
-                translation_key="invalid_buttons",
-            )
+        buttons = _parse_buttons(data.get("buttons"))
         if buttons:
             text = f"{data.get('title')}\n{data['message']}" if data.get("title") else data["message"]
             if not str(text).strip():
@@ -192,12 +204,14 @@ async def async_send_photo_handler(service: ServiceCall) -> None:
         )
 
     try:
+        buttons = _parse_buttons(data.get("buttons"))
         await send_photo(
             hass,
             token=token,
             peer_id=int(recipient_id),
             file=data["file"],
             caption=data.get("caption"),
+            buttons=buttons,
         )
     except (RuntimeError, OSError) as err:
         _LOGGER.error("VK send photo failed: %s", err)
@@ -269,12 +283,14 @@ async def async_send_document_handler(service: ServiceCall) -> None:
         )
 
     try:
+        buttons = _parse_buttons(data.get("buttons"))
         await send_document(
             hass,
             token=token,
             peer_id=int(recipient_id),
             file=data["file"],
             caption=data.get("caption"),
+            buttons=buttons,
         )
     except (RuntimeError, OSError) as err:
         _LOGGER.error("VK send document failed: %s", err)

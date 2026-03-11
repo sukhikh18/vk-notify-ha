@@ -46,6 +46,10 @@
         "recipient_id": {
           "name": "ID получателя",
           "description": "VK peer_id. Пользователь: положительный ID, беседа: 2000000000 + номер беседы."
+        },
+        "buttons": {
+          "name": "Кнопки",
+          "description": "Inline-кнопки. Формат YAML: список рядов, кнопка: text, command (optional), color (optional)."
         }
       }
     },
@@ -94,6 +98,10 @@
         "recipient_id": {
           "name": "ID получателя",
           "description": "VK peer_id. Пользователь: положительный ID, беседа: 2000000000 + номер беседы."
+        },
+        "buttons": {
+          "name": "Кнопки",
+          "description": "Inline-кнопки. Формат YAML: список рядов, кнопка: text, command (optional), color (optional)."
         }
       }
     }
