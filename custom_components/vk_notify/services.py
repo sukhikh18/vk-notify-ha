@@ -19,7 +19,12 @@ from .const import (
     SERVICE_SEND_VIDEO,
 )
 from .notify import async_send_plain_message
-from .api import send_document, send_photo, send_video
+from .api import send_document, send_message, send_photo, send_video
+
+try:
+    import yaml
+except Exception:  # pragma: no cover - fallback if yaml missing
+    yaml = None
 from .schemas import (
     SERVICE_SEND_DOCUMENT_SCHEMA,
     SERVICE_SEND_MESSAGE_SCHEMA,
@@ -104,13 +109,58 @@ async def async_send_message_handler(service: ServiceCall) -> None:
         )
 
     try:
-        await async_send_plain_message(
-            hass,
-            entry,
-            int(recipient_id),
-            data["message"],
-            title=data.get("title"),
-        )
+        buttons = data.get("buttons")
+        if isinstance(buttons, str):
+            if yaml is None:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="invalid_buttons",
+                )
+            try:
+                buttons = yaml.safe_load(buttons)
+            except Exception as err:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="invalid_buttons",
+                    translation_placeholders={"reason": str(err)},
+                ) from err
+            if buttons is None:
+                buttons = []
+        if buttons and not isinstance(buttons, list):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_buttons",
+            )
+        if buttons:
+            text = f"{data.get('title')}\n{data['message']}" if data.get("title") else data["message"]
+            if not str(text).strip():
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="empty_message",
+                )
+            token = str(entry.data.get(CONF_ACCESS_TOKEN, "")).strip()
+            if not token:
+                raise RuntimeError("No VK token in config entry")
+            await send_message(
+                hass,
+                token=token,
+                peer_id=int(recipient_id),
+                message=text,
+                buttons=buttons,
+            )
+        else:
+            if not str(data.get("message", "")).strip():
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="empty_message",
+                )
+            await async_send_plain_message(
+                hass,
+                entry,
+                int(recipient_id),
+                data["message"],
+                title=data.get("title"),
+            )
     except RuntimeError as err:
         _LOGGER.error("VK send message failed: %s", err)
         raise ServiceValidationError(

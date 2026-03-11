@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import mimetypes
 import os
@@ -82,23 +83,91 @@ async def validate_token(hass: HomeAssistant, token: str, group_id: int) -> str 
     return "cannot_connect"
 
 
+def _build_keyboard(buttons: list[list[dict[str, Any]]]) -> str:
+    """Build VK inline keyboard JSON string from buttons."""
+    rows: list[list[dict[str, Any]]] = []
+    for row in buttons:
+        api_row: list[dict[str, Any]] = []
+        for btn in row:
+            if not isinstance(btn, dict):
+                continue
+            label = str(btn.get("text", "")).strip()
+            command = btn.get("command")
+            if not label:
+                continue
+            if not command:
+                command = label
+            payload = json.dumps({"command": command}, ensure_ascii=False)
+            action = {
+                "type": "callback",
+                "label": label,
+                "payload": payload,
+            }
+            api_btn: dict[str, Any] = {"action": action}
+            color = btn.get("color")
+            if color:
+                api_btn["color"] = str(color)
+            api_row.append(api_btn)
+        if api_row:
+            rows.append(api_row)
+    keyboard = {
+        "inline": True,
+        "buttons": rows,
+    }
+    return json.dumps(keyboard, ensure_ascii=False)
+
+
+async def answer_message_event(
+    hass: HomeAssistant,
+    token: str,
+    event_id: str,
+    user_id: int,
+    peer_id: int,
+    text: str | None = None,
+) -> None:
+    """Answer message_event to stop spinner in VK client."""
+    event_data = {"type": "show_snackbar", "text": text or "OK"}
+    body = await _vk_api_call(
+        hass,
+        token,
+        "messages.sendMessageEventAnswer",
+        {
+            "event_id": event_id,
+            "user_id": int(user_id),
+            "peer_id": int(peer_id),
+            "event_data": json.dumps(event_data, ensure_ascii=False),
+        },
+    )
+    if "error" in body:
+        error = body["error"]
+        _LOGGER.warning(
+            "VK sendMessageEventAnswer failed: code=%s msg=%s",
+            error.get("error_code"),
+            error.get("error_msg"),
+        )
+
+
 async def send_message(
     hass: HomeAssistant,
     token: str,
     peer_id: int,
     message: str,
+    buttons: list[list[dict[str, Any]]] | None = None,
 ) -> None:
-    """Send plain text message via messages.send."""
+    """Send plain text message via messages.send (optionally with inline buttons)."""
     text = message[:4000]
+    params: dict[str, Any] = {
+        "peer_id": int(peer_id),
+        "random_id": random.randint(1, 2_147_483_647),
+        "message": text,
+    }
+    if buttons:
+        params["keyboard"] = _build_keyboard(buttons)
     body = await _vk_api_call(
         hass,
         token,
         "messages.send",
-        {
-            "peer_id": int(peer_id),
-            "random_id": random.randint(1, 2_147_483_647),
-            "message": text,
-        },
+        params,
     )
     if "error" in body:
         error = body["error"]

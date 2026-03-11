@@ -20,6 +20,10 @@
         "recipient_id": {
           "name": "Recipient ID",
           "description": "VK peer_id. User: positive ID, chat: 2000000000 + chat_number."
+        },
+        "buttons": {
+          "name": "Buttons",
+          "description": "Inline buttons. YAML format: list of rows, button: text, command (optional), color (optional)."
         }
       }
     },
@@ -119,6 +123,12 @@
     },
     "send_document_failed": {
       "message": "Failed to send VK document: {reason}"
+    },
+    "empty_message": {
+      "message": "Message cannot be empty"
+    },
+    "invalid_buttons": {
+      "message": "Invalid buttons format"
     }
   },
   "config": {
@@ -165,5 +175,7 @@
   },
   "send_photo_failed": "Failed to send VK photo: {reason}",
   "send_video_failed": "Failed to send VK video: {reason}",
-  "send_document_failed": "Failed to send VK document: {reason}"
+  "send_document_failed": "Failed to send VK document: {reason}",
+  "empty_message": "Message cannot be empty",
+  "invalid_buttons": "Invalid buttons format"
 }

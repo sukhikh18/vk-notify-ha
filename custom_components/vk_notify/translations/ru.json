@@ -20,6 +20,10 @@
         "recipient_id": {
           "name": "ID получателя",
           "description": "VK peer_id. Пользователь: положительный ID, беседа: 2000000000 + номер беседы."
+        },
+        "buttons": {
+          "name": "Кнопки",
+          "description": "Inline-кнопки. Формат YAML: список рядов, кнопка: text, command (optional), color (optional)."
         }
       }
     },
@@ -119,6 +123,12 @@
     },
     "send_document_failed": {
       "message": "Не удалось отправить документ в VK: {reason}"
+    },
+    "empty_message": {
+      "message": "Сообщение не может быть пустым"
+    },
+    "invalid_buttons": {
+      "message": "Неверный формат кнопок"
     }
   },
   "config": {
@@ -165,5 +175,7 @@
   },
   "send_photo_failed": "Не удалось отправить фото в VK: {reason}",
   "send_video_failed": "Не удалось отправить видео в VK: {reason}",
-  "send_document_failed": "Не удалось отправить документ в VK: {reason}"
+  "send_document_failed": "Не удалось отправить документ в VK: {reason}",
+  "empty_message": "Сообщение не может быть пустым",
+  "invalid_buttons": "Неверный формат кнопок"
 }

@@ -9,6 +9,7 @@ from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
 
+from .api import answer_message_event
 from .const import (
     CONF_CONFIRMATION_CODE,
     CONF_GROUP_ID,
@@ -49,6 +50,15 @@ def _event_data(entry: ConfigEntry, payload: dict[str, Any]) -> dict[str, Any]:
             data["payload"] = json.loads(data["payload"])
         except json.JSONDecodeError:
             pass
+    payload = data.get("payload")
+    if isinstance(payload, dict):
+        command = payload.get("command") or payload.get("action") or payload.get("cmd")
+    elif isinstance(payload, str):
+        command = payload
+    else:
+        command = None
+    if command:
+        data["command"] = command
     return {k: v for k, v in data.items() if v is not None}
 
 
@@ -59,9 +69,9 @@ class VkNotifyWebhookView(HomeAssistantView):
     name = "api:vk_notify:webhook"
     requires_auth = False
 
-    async def post(self, request: web.Request) -> web.Response:
+    async def post(self, request: web.Request, entry_id: str | None = None) -> web.Response:
         """Handle webhook callback from VK."""
-        entry_id = request.match_info.get("entry_id")
+        entry_id = entry_id or request.match_info.get("entry_id")
         hass = request.app["hass"]
         entry = hass.config_entries.async_get_entry(entry_id) if entry_id else None
         if not entry or entry.domain != DOMAIN:
@@ -94,6 +104,23 @@ class VkNotifyWebhookView(HomeAssistantView):
             return web.Response(status=200, text=confirmation)
 
         if update_type in {"message_new", "message_event"}:
-            hass.bus.async_fire(EVENT_VK_NOTIFY_RECEIVED, _event_data(entry, body))
+            event_data = _event_data(entry, body)
+            hass.bus.async_fire(EVENT_VK_NOTIFY_RECEIVED, event_data)
+            if update_type == "message_event":
+                obj = body.get("object") or {}
+                event_id = obj.get("event_id")
+                user_id = obj.get("user_id")
+                peer_id = obj.get("peer_id")
+                token = entry.data.get("access_token") or ""
+                if event_id and user_id and peer_id and token:
+                    hass.async_create_task(
+                        answer_message_event(
+                            hass,
+                            token=str(token),
+                            event_id=str(event_id),
+                            user_id=int(user_id),
+                            peer_id=int(peer_id),
+                        )
+                    )
 
         return web.Response(status=200, text="ok")

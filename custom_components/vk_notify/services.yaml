@@ -21,6 +21,19 @@ send_message:
       example: 2000000001
       selector:
         number:
+    buttons:
+      required: false
+      example: |
+        - - text: "Кнопка 1"
+            command: mute1
+          - text: "Кнопка 2"
+            command: mute2
+        - - text: "Кнопка 3"
+            command: mute3
+          - text: "Кнопка 4"
+            command: mute4
+      selector:
+        text:
 send_photo:
   name: Send photo
   description: Send a photo to VK by peer_id.

@@ -11,10 +11,22 @@ from .const import (
     CONF_RECIPIENT_ID,
 )
 
+_BUTTON_SCHEMA = vol.Schema(
+    {
+        vol.Required("text"): cv.string,
+        vol.Optional("command"): cv.string,
+        vol.Optional("color"): cv.string,
+    }
+)
+
 SERVICE_SEND_MESSAGE_SCHEMA = vol.Schema(
     {
         vol.Required("message"): cv.string,
         vol.Optional("title"): cv.string,
+        vol.Optional("buttons"): vol.Any(
+            cv.string,
+            vol.All(cv.ensure_list, [vol.All(cv.ensure_list, [_BUTTON_SCHEMA])]),
+        ),
         vol.Optional(CONF_CONFIG_ENTRY_ID): cv.string,
         vol.Optional(CONF_RECIPIENT_ID): vol.Coerce(int),
     }
