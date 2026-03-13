@@ -267,6 +267,10 @@ async def send_photo(
         raise RuntimeError(
             f"VK photo upload response missing fields: {upload_body!r}"
         )
+    if not upload_body.get("photo"):
+        raise RuntimeError(
+            f"VK photo upload returned empty photo field: {upload_body!r}"
+        )
 
     if "error" in upload_body:
         error = upload_body["error"]
