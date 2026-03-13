@@ -255,7 +255,18 @@ async def send_photo(
         data=form,
         timeout=aiohttp.ClientTimeout(total=60),
     ) as upload_resp:
+        if upload_resp.status >= 400:
+            body = await upload_resp.text()
+            raise RuntimeError(
+                f"VK photo upload failed: status={upload_resp.status}, body={body[:200]}"
+            )
         upload_body = await upload_resp.json(content_type=None)
+    if not isinstance(upload_body, dict):
+        raise RuntimeError(f"VK photo upload returned invalid response: {upload_body!r}")
+    if not all(k in upload_body for k in ("photo", "server", "hash")):
+        raise RuntimeError(
+            f"VK photo upload response missing fields: {upload_body!r}"
+        )
 
     if "error" in upload_body:
         error = upload_body["error"]
