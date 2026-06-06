@@ -208,6 +208,7 @@ async def async_send_photo_handler(service: ServiceCall) -> None:
 
     try:
         buttons = _parse_buttons(data.get("buttons"))
+        buttons_inline = bool(data.get('buttons_inline'))
         await send_photo(
             hass,
             token=token,
@@ -215,6 +216,7 @@ async def async_send_photo_handler(service: ServiceCall) -> None:
             file=data["file"],
             caption=data.get("caption"),
             buttons=buttons,
+            buttons_inline=buttons_inline
         )
     except (RuntimeError, OSError) as err:
         _LOGGER.error("VK send photo failed: %s", err)
@@ -287,6 +289,7 @@ async def async_send_document_handler(service: ServiceCall) -> None:
 
     try:
         buttons = _parse_buttons(data.get("buttons"))
+        buttons_inline = bool(data.get('buttons_inline'))
         await send_document(
             hass,
             token=token,
@@ -294,6 +297,7 @@ async def async_send_document_handler(service: ServiceCall) -> None:
             file=data["file"],
             caption=data.get("caption"),
             buttons=buttons,
+            buttons_inline=buttons_inline,
         )
     except (RuntimeError, OSError) as err:
         _LOGGER.error("VK send document failed: %s", err)
