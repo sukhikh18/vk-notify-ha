@@ -23,6 +23,10 @@
         "buttons": {
           "name": "Buttons",
           "description": "Inline buttons. YAML format: list of rows, button: text, command (optional), color (optional)."
+        },
+        "buttons_inline": {
+          "name": "Buttons inline",
+          "description": "Buttons type."
         }
       }
     },
@@ -49,6 +53,10 @@
         "buttons": {
           "name": "Buttons",
           "description": "Inline buttons. YAML format: list of rows, button: text, command (optional), color (optional)."
+        },
+        "buttons_inline": {
+          "name": "Buttons inline",
+          "description": "Buttons type."
         }
       }
     },
@@ -101,6 +109,10 @@
         "buttons": {
           "name": "Buttons",
           "description": "Inline buttons. YAML format: list of rows, button: text, command (optional), color (optional)."
+        },
+        "buttons_inline": {
+          "name": "Buttons inline",
+          "description": "Buttons type."
         }
       }
     }
