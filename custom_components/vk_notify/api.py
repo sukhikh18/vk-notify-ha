@@ -83,7 +83,7 @@ async def validate_token(hass: HomeAssistant, token: str, group_id: int) -> str 
     return "cannot_connect"
 
 
-def _build_keyboard(buttons: list[list[dict[str, Any]]]) -> str:
+def _build_keyboard(buttons: list[list[dict[str, Any]]], inline: bool = True) -> str:
     """Build VK inline keyboard JSON string from buttons."""
     rows: list[list[dict[str, Any]]] = []
     for row in buttons:
@@ -111,7 +111,7 @@ def _build_keyboard(buttons: list[list[dict[str, Any]]]) -> str:
         if api_row:
             rows.append(api_row)
     keyboard = {
-        "inline": True,
+        "inline": inline,
         "buttons": rows,
     }
     return json.dumps(keyboard, ensure_ascii=False)
@@ -153,6 +153,7 @@ async def send_message(
     peer_id: int,
     message: str,
     buttons: list[list[dict[str, Any]]] | None = None,
+    buttons_inline: bool = True,
 ) -> None:
     """Send plain text message via messages.send (optionally with inline buttons)."""
     text = message[:4000]
@@ -162,7 +163,7 @@ async def send_message(
         "message": text,
     }
     if buttons:
-        params["keyboard"] = _build_keyboard(buttons)
+        params["keyboard"] = _build_keyboard(buttons, buttons_inline)
     body = await _vk_api_call(
         hass,
         token,
@@ -221,6 +222,7 @@ async def send_photo(
     file: str,
     caption: str | None = None,
     buttons: list[list[dict[str, Any]]] | None = None,
+    buttons_inline: bool = True,
 ) -> None:
     """Upload image and send it to VK peer."""
     upload_server_resp = await _vk_api_call(
@@ -316,7 +318,7 @@ async def send_photo(
         "attachment": attachment,
     }
     if buttons:
-        params["keyboard"] = _build_keyboard(buttons)
+        params["keyboard"] = _build_keyboard(buttons, buttons_inline)
     send_resp = await _vk_api_call(
         hass,
         token,
@@ -337,6 +339,7 @@ async def send_document(
     file: str,
     caption: str | None = None,
     buttons: list[list[dict[str, Any]]] | None = None,
+    buttons_inline: bool = True,
 ) -> None:
     """Upload file and send it to VK peer as document."""
     source = file.strip()
@@ -425,7 +428,7 @@ async def send_document(
         "attachment": attachment,
     }
     if buttons:
-        params["keyboard"] = _build_keyboard(buttons)
+        params["keyboard"] = _build_keyboard(buttons, buttons_inline)
     send_resp = await _vk_api_call(
         hass,
         token,

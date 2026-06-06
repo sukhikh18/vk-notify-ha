@@ -153,12 +153,15 @@ async def async_send_message_handler(service: ServiceCall) -> None:
             token = str(entry.data.get(CONF_ACCESS_TOKEN, "")).strip()
             if not token:
                 raise RuntimeError("No VK token in config entry")
+
+            buttons_inline = bool(data.get('buttons_inline'))
             await send_message(
                 hass,
                 token=token,
                 peer_id=int(recipient_id),
                 message=text,
                 buttons=buttons,
+                buttons_inline=buttons_inline,
             )
         else:
             if not str(data.get("message", "")).strip():
