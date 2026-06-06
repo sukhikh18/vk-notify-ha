@@ -27,6 +27,7 @@ SERVICE_SEND_MESSAGE_SCHEMA = vol.Schema(
             cv.string,
             vol.All(cv.ensure_list, [vol.All(cv.ensure_list, [_BUTTON_SCHEMA])]),
         ),
+        vol.Optional("buttons_inline"): cv.boolean,
         vol.Optional(CONF_CONFIG_ENTRY_ID): cv.string,
         vol.Optional(CONF_RECIPIENT_ID): vol.Coerce(int),
     }
@@ -40,6 +41,7 @@ SERVICE_SEND_PHOTO_SCHEMA = vol.Schema(
             cv.string,
             vol.All(cv.ensure_list, [vol.All(cv.ensure_list, [_BUTTON_SCHEMA])]),
         ),
+        vol.Optional("buttons_inline"): cv.boolean,
         vol.Optional(CONF_CONFIG_ENTRY_ID): cv.string,
         vol.Optional(CONF_RECIPIENT_ID): vol.Coerce(int),
     }
@@ -53,6 +55,7 @@ SERVICE_SEND_DOCUMENT_SCHEMA = vol.Schema(
             cv.string,
             vol.All(cv.ensure_list, [vol.All(cv.ensure_list, [_BUTTON_SCHEMA])]),
         ),
+        vol.Optional("buttons_inline"): cv.boolean,
         vol.Optional(CONF_CONFIG_ENTRY_ID): cv.string,
         vol.Optional(CONF_RECIPIENT_ID): vol.Coerce(int),
     }
